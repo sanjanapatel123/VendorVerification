@@ -1,0 +1,166 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum VendorStatus {
+  DRAFT
+  UNDER_REVIEW
+  ACTION_REQUIRED
+  APPROVED
+  REJECTED
+}
+
+enum DocumentType {
+  REGISTRATION_CERTIFICATE
+  GST_CERTIFICATE
+  BANK_DOCUMENT
+  OTHER
+}
+
+enum DocumentStatus {
+  AVAILABLE
+  MISSING
+  VERIFIED
+}
+
+enum VerificationStatus {
+  VERIFIED
+  MISMATCH
+  UNABLE_TO_VERIFY
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum TaskStatus {
+  PENDING
+  COMPLETED
+}
+
+enum EmailStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+model Vendor {
+  id                    String       @id @default(cuid())
+  companyName           String
+  contactPerson         String
+  email                 String
+  phone                 String?
+  address               String?
+  registrationNumber    String?
+  gstNumber             String?
+  bankAccountNumber     String?
+  ifscCode              String?
+  status                VendorStatus @default(DRAFT)
+
+  documents             Document[]
+  verifications         Verification[]
+  tasks                 Task[]
+  versions              VendorVersion[]
+  emailLogs             EmailLog[]
+
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+
+  @@index([companyName])
+  @@index([email])
+  @@index([status])
+}
+
+model Document {
+  id             String         @id @default(cuid())
+  vendorId       String
+  vendor         Vendor         @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  type           DocumentType
+  fileName       String
+  storedFileName String
+  mimeType       String
+  filePath       String
+  status         DocumentStatus @default(AVAILABLE)
+  extractedData  Json?
+  extractionError String?
+
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([vendorId, type])
+}
+
+model Verification {
+  id                String             @id @default(cuid())
+  vendorId          String
+  vendor            Vendor             @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  status            VerificationStatus
+  provider          String
+  searchedTerm      String
+  externalCompanyId String?
+  result            Json?
+  mismatches        Json?
+  errorMessage      String?
+
+  createdAt         DateTime           @default(now())
+
+  @@index([vendorId, createdAt])
+}
+
+model Task {
+  id          String       @id @default(cuid())
+  vendorId    String
+  vendor      Vendor       @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?
+  priority    TaskPriority @default(MEDIUM)
+  dueDate     DateTime?
+  status      TaskStatus   @default(PENDING)
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([vendorId, status])
+}
+
+model VendorVersion {
+  id         String   @id @default(cuid())
+  vendorId   String
+  vendor     Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  version    Int
+  snapshot   Json
+  changes    Json
+  createdAt  DateTime @default(now())
+
+  @@unique([vendorId, version])
+  @@index([vendorId, createdAt])
+}
+
+model EmailLog {
+  id             String      @id @default(cuid())
+  vendorId       String
+  vendor         Vendor      @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  documentType   DocumentType
+  recipient      String
+  subject        String
+  status         EmailStatus @default(PENDING)
+  idempotencyKey String      @unique
+  providerId     String?
+  errorMessage   String?
+
+  createdAt      DateTime    @default(now())
+  sentAt         DateTime?
+}
