@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+:root {
+  --forest: #22372b;
+  --forest-light: #304b3a;
+  --canvas: #fafaf8;
+  --muted: #858a82;
+  --border: #eaece6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: #222820;
+  font-family: var(--font-body), Arial, sans-serif;
+}
+
+.font-editorial {
+  font-family: var(--font-heading), Georgia, serif;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a {
+  transition: all 180ms ease;
+}
+
+::selection {
+  background: #dce8d9;
+  color: var(--forest);
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 450ms ease both;
+}
+
+.delay-100 {
+  animation-delay: 100ms;
+}
+.delay-200 {
+  animation-delay: 200ms;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #eeefe9;
+  border-radius: 8px;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, #ffffffb5, transparent);
+  animation: shimmer 1.5s infinite;
+}
