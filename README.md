@@ -74,8 +74,6 @@ EMAIL_FROM="Your Name <your_verified_sender@example.com>"
 OPENCORPORATES_API_TOKEN="your_api_token"
 ```
 
-Use your actual local values. Never commit real credentials.
-
 Run your Prisma migrations using the commands configured in your backend project, then start the backend using its development script.
 
 ### 3. Configure the frontend
